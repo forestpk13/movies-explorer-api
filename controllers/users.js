@@ -92,32 +92,32 @@ module.exports.login = (req, res, next) => {
     });
 };
 
-module.exports.logout = (_, res) => res.clearCookie('token', { secure: true, sameSite: 'none' }).send({ message: 'Вы вышли из профиля' });
+module.exports.logout = (_, res) => res.clearCookie('token').send({ message: 'Вы вышли из профиля' });
 
-const updateUser = (req, res, next, userData) => {
-  User.findByIdAndUpdate(
-    req.user._id,
-    userData,
-    {
-      new: true,
-      runValidators: true,
-    },
-  )
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError(err.message));
-      } else {
-        next(err);
-      }
-    });
-};
-
-module.exports.updateUserInfo = (req, res, next) => {
-  const userData = {
-    name: req.body.name,
-  };
-  updateUser(req, res, next, userData);
+module.exports.updateUserInfo = async (req, res, next) => {
+  const { name, email } = req.body;
+  try {
+    const doubleUser = await User.findOne({ email });
+    // если _id не равны - значит попытка использовать email занятый другим пользователем
+    if (doubleUser && doubleUser._id.toString() !== req.user._id) {
+      throw new ConflictError('Пользователь с данным email уже существует');
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { name, email },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+    res.send(updatedUser);
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      next(new BadRequestError(err.message));
+    } else {
+      next(err);
+    }
+  }
 };
 
 module.exports.getUsers = (req, res, next) => {
