@@ -92,7 +92,7 @@ module.exports.login = (req, res, next) => {
     });
 };
 
-module.exports.logout = (_, res) => res.clearCookie('token').send({ message: 'Вы вышли из профиля' });
+module.exports.logout = (_, res) => res.clearCookie('token', { secure: true, sameSite: 'none' }).send({ message: 'Вы вышли из профиля' });
 
 module.exports.updateUserInfo = async (req, res, next) => {
   const { name, email } = req.body;
