@@ -72,7 +72,7 @@ module.exports.login = (req, res, next) => {
             secure: true,
             sameSite: 'none',
           })
-          .send({ email });
+          .send({ user });
       } else {
         return res
           .cookie('token', token, {
@@ -80,7 +80,7 @@ module.exports.login = (req, res, next) => {
             httpOnly: true,
             sameSite: true,
           })
-          .send({ email });
+          .send({ user });
       }
     })
     .catch((err) => {
